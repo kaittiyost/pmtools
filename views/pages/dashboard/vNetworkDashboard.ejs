@@ -1,0 +1,55 @@
+<div>
+    
+</div>
+
+<script>
+    function viewvNetworkDashboard(data){
+        console.log("viewvNetworkDashboard..");
+
+        let data_arr = JSON.parse(data);
+
+        let ListIpHost = [];
+        var content =
+            '<div class="p-3">'+
+            '<h4>VM & IP Address</h4><hr>'+
+            '<table class="table table-bordered border-secondary" id="table_ipaddr">' + 
+            '  <thead>' + 
+            '    <tr>' + 
+            '      <th scope="col">#</th>' + 
+            '      <th scope="col">VM</th>' + 
+            '      <th scope="col">IP Address</th>' + 
+            '      <th scope="col">HOST</th>' +
+            '      <th scope="col">Network</th>' + 
+            '      <th scope="col">Cluster</th>' + 
+            '    </tr>' + 
+            '  </thead>'+
+            '  <tbody>' ;
+
+        
+        for (i = 0; i < data_arr.length; i++) {
+
+            ListIpHost[i] = data_arr[i]['Host']
+          
+            content += ''+
+            '    <tr>' + 
+            '      <th scope="row">'+(i+1)+'</th>' + 
+            '      <td>'+data_arr[i]['VM']+'</td>' + 
+            '      <td>'+data_arr[i]['IPv4 Address']+'</td>' + 
+            '      <td>'+data_arr[i]['Host']+'</td>' + 
+            '      <td>'+data_arr[i]['Network']+'</td>' + 
+            '      <td>'+data_arr[i]['Cluster']+'</td>' + 
+            '    </tr>';
+        }
+
+        content += ''+
+        '  </tbody>' + 
+        '</table>'+
+        '</div>'
+        
+        $("#contents").append(content);
+        $('#table_ipaddr').DataTable();
+
+        console.log(ListIpHost);
+
+    }
+</script>

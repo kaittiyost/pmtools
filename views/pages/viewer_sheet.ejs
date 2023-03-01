@@ -1,0 +1,290 @@
+<%- include('../partials/head') %> <%- include('../partials/nav') %>
+<br />
+<script>
+    function replaceStringPlus(text){
+        //console.log(text.replace("+","(plus)"));
+        return String(text.replace(" ","\n"))
+    }
+    function viewType(type){
+        if(type == "table"){
+            var content = '' + 
+            '<table id="table_render" class="table table-striped" style="width:100%">' + 
+            '                    <thead class="alert alert-light align-text-top text-dark">' + 
+            '                        <tr>' + 
+            '                            <% for(var c=0; c < column_names.length; c++) {   %>' + 
+            '                            <th id="col_<%=  String(column_names[c]) %>"><%=  String(column_names[c]) %></th>' + 
+            '                            <% }%>' + 
+            '                        </tr>' + 
+            '                    </thead>' + 
+            '                    <tbody>' + 
+            '                        <% for(var r=0; r < data.length; r++) { %>' + 
+            '                            <tr onclick="showModal(<%= r %>)">' + 
+            '                            <% for(var c=0; c < column_names.length; c++) { %>' + 
+            '                                <td>'+replaceStringPlus('<%= data[r][String(column_names[c])] %>')+'</td>' + 
+            '                            <% } %>' + 
+            '                            </tr>' + 
+            '                        <% } %>' + 
+            '                    </tbody>' + 
+            '                </table>' + 
+            '';
+
+            $('#contents').html(content)
+            setActiveButton('btn_view_table')
+        }
+        if(type == "card"){
+            var content = '' + 
+            '<div class="row p-4">' + 
+            '   <% for(var r=0; r < data.length; r++) { %>' + 
+            '       <div class="col-sm-3 m-2 card p-1 mb-2 _onmousehover" style="overflow: scroll;" onclick="showModal(<%= r %>)">' + 
+            '           <% for(var c=0; c < 4; c++) { %>' + 
+            '           <span><strong><%= column_names[c] %> :</strong><label class="text-dark">'+replaceStringPlus('<%= data[r][String(column_names[c])] %>')+'</label></span>' + 
+            '           <% } %>'+
+            '       </div>' + 
+            '   <% } %>' + 
+            '</div>' + 
+            '';
+
+            $('#contents').html(content)
+            setActiveButton('btn_view_card')
+            
+        }
+
+        if(type == "dashboard"){
+            var content = '' + 
+            '<div class="row p-4">' + 
+            '<div class="col-md-3 m-1 alert alert-primary"><%= sheetname %> | <%= data.length %></div>'+
+            '<div class="col-md-3 m-1 alert alert-primary"><%= sheetname %> | <%= data.length %></div>'+
+            '</div>' + 
+            '';
+
+            $('#contents').html(content)
+            setActiveButton('btn_view_dashboard')
+
+            var chart = new ApexCharts(document.querySelector("#chart"), options);
+            chart.render();
+            var chart2 = new ApexCharts(document.querySelector("#chart2"), options2);
+            chart2.render();
+        }
+
+        if(type == "StorageUtil"){
+            try {
+                let data = JSON.parse('<%- JSON.stringify(data) %>');
+                viewStorageUtilization(data)
+            } catch (error) {
+                // console.log(error);
+                // let data = '<%= JSON.stringify(data) %>';
+                // console.log(data);
+                // viewStorageUtilization(data)  
+            }
+        }
+        if(type == "vInfoDashboard"){
+            console.log('viewType : vInfoDashboard');
+            console.log('<%- dataJson %>');
+            let data = JSON.parse('<%- dataJson %>');
+            console.log('Object.keys(data).length :'+Object.keys(data).length);
+            
+            // for (i = 0; i < Object.keys(data).length; i++) {
+            //     console.log(data[i]);
+            // }
+            //viewvInfoDashboard(data)
+        }
+
+        if(type == "vNetworkDashboard"){
+            setActiveButton('vNetworkDashboard')
+            try {
+                let data = '<%= JSON.stringify(data) %>';
+                console.log(data);
+                viewvNetworkDashboard(data)
+            } catch (error) {
+                console.log(error);
+                let data = '<%=  JSON.stringify(data) %>';
+                console.log(data);
+                viewvNetworkDashboard(data)  
+            }
+
+        }
+    }
+
+    function setActiveButton(id_active){
+        if(id_active == 'btn_view_table'){
+            $('#btn_view_table').removeClass()
+            $('#btn_view_dashboard').removeClass()
+            $('#btn_view_card').removeClass()
+
+            $('#btn_view_table').addClass('btn btn-primary active')
+            $('#btn_view_card').addClass('btn btn-outline-primary')
+            $('#btn_view_dashboard').addClass('btn btn-outline-primary')
+        }
+
+        if(id_active == 'btn_view_card'){
+            $('#btn_view_table').removeClass()
+            $('#btn_view_dashboard').removeClass()
+            $('#btn_view_card').removeClass()
+
+            $('#btn_view_table').addClass('btn btn-outline-primary')
+            $('#btn_view_card').addClass('btn btn-primary active')
+            $('#btn_view_dashboard').addClass('btn btn-outline-primary')
+        }
+
+        if(id_active == 'btn_view_dashboard'){
+            $('#btn_view_table').removeClass()
+            $('#btn_view_dashboard').removeClass()
+            $('#btn_view_card').removeClass()
+
+            $('#btn_view_table').addClass('btn btn-outline-primary')
+            $('#btn_view_card').addClass('btn btn-outline-primary')
+            $('#btn_view_dashboard').addClass('btn btn-primary active')
+        }
+    }
+
+    function changeViewType(viewType){
+        window.location.href=`/viewer_sheet/<%=filename %>/<%=sheetname %>/${viewType}`;
+    }
+
+    function showModal(data_index){
+
+        var content = '' + 
+            '<table class="table">' + 
+            '<thead>' + 
+            '    <tr>' + 
+            '      <th scope="col">Column</th>' + 
+            '      <th scope="col">Value</th>' + 
+            '    </tr>' + 
+            ' </thead>' + 
+            '           <% for(var c=0; c < column_names.length; c++) { %>' + 
+            '               <tr>'+
+            '                   <td><%= column_names[c] %> :</td>'+
+            '                   <td>'+'<%= data[0][String(column_names[c])] %>'+'</td>'+
+            '               </tr>' + 
+            '           <% } %>' + 
+            '</table>' + 
+            '';
+        
+        $('#details').html(content)
+        $('#modalShowDetail').modal('show');
+    }
+
+    $(document).ready(function () {
+        viewType('<%- viewType %>')
+        $('#table_render').DataTable();
+
+    });
+</script>
+<div class="container-fluid">
+  <a href="/viewer/<%=filename %>">
+    <h4><span class="material-symbols-outlined">arrow_back</span>
+  </a> Sheet <%= sheetname %></h4>
+  <br />
+  <p>columns = <%= column_names.length %>, rows = <%= data.length %></p>
+<div class="row">
+    <div class="col-md-2">
+        <div class="card p-3" id="allColumns" style="height: 790px;overflow: scroll;">
+        <b>All Columns</b>
+        <hr>
+        <!-- <label><input class="form-check-input" type="checkbox" value="" > CheckAll</label><br> -->
+        <%for(col=0; col < column_names.length; col++){%>
+            <label><input onclick="setVisibleColumn('<%= column_names[col] %>')" class="form-check-input" type="checkbox" value="<%= column_names[col] %>" checked id=<%= column_names[col] %> >
+            <%= column_names[col] %></label><br>
+        <%}%>
+        </div>
+    </div>
+    <div class="col-md-10">
+        <div class="btn-group mb-2" role="group" aria-label="Basic example" id="btn_group">
+            <button type="button" id="btn_view_table" class="btn btn-primary" onclick="changeViewType('table')">Table</button>
+            <button type="button" id="btn_view_card" class="btn btn-outline-primary" onclick="changeViewType('card')">Card</button>
+            <% if(sheetname == "vDatastore"){ %>
+                <button type="button" id="btn_view_storage_util" class="btn btn-outline-dark" onclick="changeViewType('StorageUtil')" >Storage Utilization</button>
+            <% } %>
+            <% if(sheetname == "vInfo"){ %>
+                <button type="button" id="btn_view_dashboard" class="btn btn-outline-dark" onclick="changeViewType('vInfoDashboard')" >Dashboard</button>
+            <% } %>
+            <% if(sheetname == "vNetwork"){ %>
+                <button type="button" id="btn_view_dashboard" class="btn btn-outline-dark" onclick="changeViewType('vNetworkDashboard')" >Dashboard</button>
+            <% } %>
+        </div>
+        <div class="card p-1" style="height: 790px; width: 100%;overflow: scroll;">
+            <div id="contents"></div>
+            <div class="m-3 shadow" id="chart"></div>
+            <div class="m-3 shadow" id="chart2"></div>
+        </div>
+    </div>
+</div>
+</div>
+
+<!-- Modal -->
+<div class="modal" id="modalShowDetail" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1" aria-labelledby="staticBackdropLabel" aria-hidden="true">
+    <div class="modal-dialog">
+      <div class="modal-content">
+        <div class="modal-header alert alert-primary text-dark">
+          <h1 class="modal-title fs-5" id="staticBackdropLabel"><%= sheetname %></h1>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+        <div class="modal-body" style="height: 400px; overflow: scroll;">
+            <div id="details"></div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+          <button type="button" class="btn btn-primary">Understood</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+
+  <script>
+
+    function setVisibleColumn(column_names){
+        if ($('#'+column_names).is(":checked"))
+        {
+            console.log(column_names+' is check');
+            $('#col_'+column_names).show();
+        }else{
+            console.log(column_names+' is uncheck');
+            $('#col_'+column_names).hide();
+        }
+    }
+
+
+        var options = {
+          series: [{
+            name: "Desktops",
+            data: [10, 41, 35, 51, 49, 62, 69, 91, 114]
+        }],
+          chart: {
+          height: 350,
+          type: 'line',
+          zoom: {
+            enabled: false
+          }
+        },
+        dataLabels: {
+          enabled: false
+        },
+        stroke: {
+          curve: 'straight'
+        },
+        title: {
+          text: 'Product Trends by Month',
+          align: 'left'
+        },
+        grid: {
+          row: {
+            colors: ['#f3f3f3', 'transparent'], // takes an array which will be repeated on columns
+            opacity: 0.5
+          },
+        },
+        xaxis: {
+          categories: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep'],
+        }
+        };
+
+        function viewStorageUtil(){
+            
+        }
+  </script>
+
+<%- include('../partials/storage_util') %>
+<%- include('./dashboard/vDatastoreDashboard') %>
+<%- include('./dashboard/vInfoDashboard') %>
+<%- include('./dashboard/vNetworkDashboard') %>
+<%- include('../partials/footer') %>

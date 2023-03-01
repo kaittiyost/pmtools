@@ -1,0 +1,240 @@
+<!-- Modal -->
+<div
+  class="modal"
+  id="ModalShowUtilizationDetail"
+  data-bs-backdrop="static"
+  data-bs-keyboard="false"
+  tabindex="-1"
+  aria-labelledby="staticBackdropLabel"
+  aria-hidden="true"
+>
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header alert alert-primary text-dark">
+        <h1 class="modal-title fs-5" id="DatastoreName"></h1>
+        <button
+          type="button"
+          class="btn-close"
+          data-bs-dismiss="modal"
+          aria-label="Close"
+        ></button>
+      </div>
+      <div class="modal-body" style="height: 400px; overflow: scroll">
+        <div id="calculate_details"></div>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+          Close
+        </button>
+        <button type="button" class="btn btn-primary">Understood</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+  function viewStorageUtilization(data) {
+    console.log("viewStorageUtilization..");
+
+    const use_capacity_index = 7;
+    const free_mb_index = 10;
+
+    let data_arr = (data);
+
+    var content =
+      '<div class="m-4">' +
+      "<h4>Storage Utilization</h4><br>" +
+      '<table class="table table-bordered border-secondary" id="table_storage_util" style="width:100%">' +
+      '<thead class="align-text-top text-dark">' +
+      "<tr>" +
+      "   <th>Datastore</th>" +
+      "   <th>Max Capacity (GB)</th>" +
+      "   <th>Used (GB)</th>" +
+      "   <th>Usage %</th>" +
+      "</tr>" +
+      "</thead>" +
+      "<tbody>";
+
+    let Capacity_int = 0;
+    let Free_int = 0;
+
+    let CriticalNumber = 0;
+    let HighNumber = 0;
+    let NormalNumber = 0;
+
+    let VMName = [];
+    let UsedPer = [];
+
+    for (i = 0; i < data_arr.length; i++) {
+      Capacity_int = parseInt(data_arr[i]["Capacity MiB"]);
+      Free_int = parseInt(data_arr[i]["Free MiB"]);
+
+      let datastore_name = "'" + data_arr[i]["Name"] + "'";
+      let capacity_gb = (Capacity_int / 1024).toFixed(0);
+      let used_gb = (capacity_gb - Free_int / 1024).toFixed(0);
+      let used_per = ((used_gb * 100) / capacity_gb).toFixed(0);
+
+      VMName[i] = data_arr[i]["Name"];
+      UsedPer[i] = used_per;
+
+      let percent_color = "";
+      if (used_per >= 81) {
+        percent_color = "text-danger";
+        CriticalNumber++;
+      }
+      if (used_per >= 75 && used_per < 81) {
+        percent_color = "text-warning";
+        HighNumber++;
+      }
+      if (used_per <= 74) {
+        percent_color = "text-dark";
+        NormalNumber++;
+      }
+      content +=
+        '<tr class="' +
+        percent_color +
+        '" onclick="ShowUtilizationDetail(' +
+        datastore_name +
+        "," +
+        Capacity_int +
+        "," +
+        Free_int +
+        ')">' +
+        "<td>" +
+        data_arr[i]["Name"] +
+        "</td>" +
+        "<td>" +
+        capacity_gb +
+        "</td>" +
+        "<td>" +
+        used_gb +
+        "</td>" +
+        "<td>" +
+        used_per +
+        "</td>" +
+        "<tr>";
+    }
+
+    content +=
+      "</tbody></div>" +
+      "<br>" +
+      '<div class="row">'+
+      '<div class="col-md-6" id="chart_range"></div>'+
+      '<div class="col-md-6 card mb-3 p-3" >'+
+      '<div class="card p-3 alert alert-danger">Datastore used max</div>'+
+      '<div class="card p-3 alert alert-warning">Datastore used max</div>'+
+      '<div class="card p-3 alert alert-success">Datastore used max</div>'+
+      '</div>'+
+      '</div>'+
+      '<div class="shadow" style="100%" id="bar_chart_range"></div>'+
+      '<br><br>'+
+      '<label class="mb-2" for="">**Usage: Normal = 0% - 74%, <label class="text-warning"> High = 75% - 80%</label>, <label class="text-danger">Critical = 81% - 100%</label> **</label>' +
+      '<br><br>';
+
+    $("#contents").append(content);
+
+    // ------------------------------------------------------- Donut Chart
+    var options_chart_range = {
+      colors: ["#dc3545", "#ffc107", "#198754"],
+      series: [CriticalNumber, HighNumber, NormalNumber],
+      chart: {
+        width: 380,
+        type: "pie",
+      },
+      labels: ["Critical", "High", "Normal"],
+      responsive: [
+        {
+          breakpoint: 480,
+          options: {
+            chart: {
+              width: 200,
+            },
+            legend: {
+              position: "bottom",
+            },
+          },
+        },
+      ],
+    };
+
+    var chart = new ApexCharts(document.querySelector("#chart_range"),options_chart_range);
+    chart.render();
+
+    //-------------------------------------------- Bar Chart
+    var options_bar_chart_range = {
+      series: [{data: UsedPer,},],
+      chart: {
+        height: 410,
+        type: "bar",
+        events: {
+          click: function (chart, w, e) {
+            // console.log(chart, w, e)
+          },
+        },
+      },
+      colors: ["#0d6efd"],
+      plotOptions: {
+        bar: {
+          columnWidth: "45%",
+          distributed: true,
+        },
+      },
+      dataLabels: {
+        enabled: false,
+      },
+      legend: {
+        show: false,
+      },
+      xaxis: {
+        categories: VMName,
+        labels: {
+          style: {
+            colors: ["##0d6efd"],
+            fontSize: "12px",
+          },
+        },
+      },
+    };
+
+    var chart = new ApexCharts(document.querySelector("#bar_chart_range"),options_bar_chart_range);
+    chart.render();
+  }
+
+  function ShowUtilizationDetail(datastore_name, capacity, free) {
+    $("#DatastoreName").html("<h2>" + datastore_name + "</h2>");
+    $("#calculate_details").html(
+      "Capacity :" +
+        capacity +
+        " MiB<br>" +
+        "Free :" +
+        free +
+        " MiB" +
+        "<br><br>" +
+        "Convert data to GB <br><br>" +
+        "Capacity to GB <br>" +
+        capacity +
+        "/1024 = " +
+        (capacity / 1024).toFixed(0) +
+        "<br>" +
+        "Free to GB <br>" +
+        free +
+        "/1024" +
+        " = " +
+        (free / 1024).toFixed(0) +
+        "<br><br>" +
+        "<hr>" +
+        "<strong>Used(GB) = capacity(GB)-free(GB)</strong><br>" +
+        "<strong>Used(GB) = " +
+        (capacity / 1024 - free / 1024).toFixed(0) +
+        "</strong><br>" +
+        "<i>Used% = (usedx100)/capacity</i><br>" +
+        "<label>Used% = " +
+        (
+          ((capacity / 1024 - free / 1024).toFixed(0) * 100) /
+          (capacity / 1024).toFixed(0)
+        ).toFixed(0) +
+        "</label>"
+    );
+    $("#ModalShowUtilizationDetail").modal("show");
+  }
+</script>

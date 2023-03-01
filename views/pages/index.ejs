@@ -1,0 +1,140 @@
+<%- include('../partials/head') %> <%- include('../partials/nav') %>
+
+<div class="container">
+    
+    <div class="card p-2 shadow-sm p-3 mt-5 mb-5 bg-body rounded">
+        <h2>PM Tools MFEC</h2>
+        <div class="form-group">
+        <br />
+        Please select .xlsx file to upload: <br /><br>
+        <!-- <img src="assets/sheet.png" width="30" alt="" srcset=""><br><br> -->
+        <input class="form-control mb-3" type="file" name="file" id="file" />
+        <button class="btn btn-primary" name="submit" onclick="uploadfile()">
+            <span class="material-symbols-outlined">upload</span> Upload
+        </button>
+        </div>
+    </div>
+
+  <div class="mb-4" id="status"></div>
+  <div class="mb-3">
+    <h4>DataSample</h4>
+    <div class="row p-3">
+        <div class="card p-3 col-md-4 mb-3 m-1">
+            <div class="row">
+                <div class="col-sm-3">
+                    <img src="/images/excel.png" width="80px" alt="">
+                </div>
+                <div class="col-sm-9">
+                    <strong><a href="/viewer/(DC)RVTools_export_all_2566.xlsx">(DC)RVTools_export_all_2566.xlsx</a></strong>
+                    <p>62 VM, 21 Datastore</p>
+                </div>
+            </div>
+        </div>
+        <div class="card p-3 col-md-4 mb-3 m-1">
+            <div class="row">
+                <div class="col-sm-3">
+                    <img src="/images/excel.png" width="80px" alt="">
+                </div>
+                <div class="col-sm-9">
+                    <strong><a href="/viewer/(DR)RVTools_export_all_2566.xlsx">(DR)RVTools_export_all_2566.xlsx</a></strong>
+                    <p>54 VM, 27 Datastore</p>
+                </div>
+            </div>
+        </div>
+        <div class="card p-3 col-md-4 mb-3 m-1">
+            <div class="row">
+                <div class="col-sm-3">
+                    <img src="/images/excel.png" width="80px" alt="">
+                </div>
+                <div class="col-sm-9">
+                    <strong><a href="/viewer/(vc01)RVTools_export_all_2022.xlsx">(vc01)RVTools_export_all_2022.xlsx</a>
+                    </strong><div class="badge rounded-pill text-bg-danger">BigFile</div>
+                    <p>1,545 VM, 69 Datastore</p>
+                </div>
+            </div>
+        </div>
+        <div class="card p-3 col-md-4 mb-3 m-1">
+            <div class="row">
+                <div class="col-sm-3">
+                    <img src="/images/excel.png" width="80px" alt="">
+                </div>
+                <div class="col-sm-9">
+                    <strong><a href="/viewer/(vc1)RVTools_export_all_2022.xlsx">(vc1)RVTools_export_all_2022.xlsx</a></strong>
+                    <p>431 VM, 22 Datastore</p>
+                </div>
+            </div>
+        </div>
+        <div class="card p-3 col-md-4 mb-3 m-1">
+            <div class="row">
+                <div class="col-sm-3">
+                    <img src="/images/excel.png" width="80px" alt="">
+                </div>
+                <div class="col-sm-9">
+                    <strong><a href="/viewer/RVTools_export_all_2023_lab50.xlsx">(RVTools_export_all_2023_lab50.xlsx</a></strong>
+                    <p><i>2023-01-20</i><br>431 VM, 22 Datastore</p>
+                </div>
+            </div>
+        </div>
+    </div>
+  </div>
+</div>
+
+<script>
+    async function uploadfile() {
+    let usr_file = $("#file").prop("files")[0];
+    var formData = new FormData();
+    formData.append("file", usr_file);
+
+    let response = await axios({
+      method: "post",
+      headers: {
+        "Content-Type": "multipart/form-data",
+      },
+      url: "/upload",
+      data: formData,
+    });
+    console.log(response.data);
+    $('#status').html('<div class="badge badge-info">'+response.data+'</div>');
+    if (response.data.status == "FileUploaded") {
+      const Toast = Swal.mixin({
+        toast: true,
+        position: "top-end",
+        showConfirmButton: false,
+        timer: 1500,
+        timerProgressBar: true,
+        didOpen: (toast) => {
+          toast.addEventListener("mouseenter", Swal.stopTimer);
+          toast.addEventListener("mouseleave", Swal.resumeTimer);
+        },
+      });
+
+      Toast.fire({
+        icon: "success",
+        title: "Upload file successfully",
+      }).then(()=>{
+        window.location.replace('/viewer/'+response.data.filename);
+      })
+
+    } else {
+      const Toast = Swal.mixin({
+        toast: true,
+        position: "top-end",
+        showConfirmButton: false,
+        timer: 3000,
+        timerProgressBar: true,
+        didOpen: (toast) => {
+          toast.addEventListener("mouseenter", Swal.stopTimer);
+          toast.addEventListener("mouseleave", Swal.resumeTimer);
+        },
+      });
+
+      Toast.fire({
+        icon: "error",
+        title:
+          "Error: There was a problem uploading your file. Please try again.",
+      });
+    }
+  }
+</script>
+
+<%- include('../partials/footer') %>

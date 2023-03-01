@@ -1,0 +1,28 @@
+<%- include('../partials/head') %> <%- include('../partials/nav') %>
+
+<br>
+
+<div class="container">
+    <a href="/"><span class="material-symbols-outlined">arrow_back</span></a>
+    <%= filename %>
+    <hr>
+
+    <div class="row">
+        <% for(var i=0; i < sheetall.length; i++) { %>
+            <div class="col-sm-3  m-1">
+                <div class="card p-3 _onmousehover" onclick="getDetail('<%= filename %>','<%= sheetall[i] %>')">
+                    <h5><%= sheetall[i] %></h5>
+                </div>
+            </div>
+         <% } %>
+    </div>
+</div>
+
+<script>
+    function getDetail(filename,sheet){
+        window.location.href=`/viewer_sheet/${filename}/${sheet}/table`;
+
+    }
+</script>
+
+<%- include('../partials/footer') %>

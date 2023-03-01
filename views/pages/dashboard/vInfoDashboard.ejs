@@ -1,0 +1,48 @@
+<div>
+    
+</div>
+
+<script>
+    function viewvInfoDashboard(data){
+        console.log("[start]viewvInfoDashboard..");
+        
+
+        console.log(data);
+
+        let Powerstate='';
+
+        var content =
+            '<div class="m-4">' +
+            "<h4>vInfo Dashboard </h4><br>" +
+            '<div class="row row-cols-1 row-cols-md-3 g-4">';
+
+        for (i = 0; i < data.length ; i++) {
+            console.log(data[i]);
+            if(data[i]['Powerstate'] == 'poweredOn'){
+                Powerstate = '<label class="text-success">'+data[i]['Powerstate']+'</label>'
+            }else if(data[i]['Powerstate'] == 'poweredOff'){
+                Powerstate = '<label class="text-secondary">'+data[i]['Powerstate']+'</label>'
+            }
+            content += ''+
+            '   <div class="col">'+
+            '   <div class="p-3 card bg-light h-100">'+
+            '       <strong>VM '+data[i]['VM']+'</strong><hr>'+
+            '       <strong>Powerstate '+Powerstate+'</strong>'+
+            '       <p>IP '+data[i]['Primary IP Address']+'<br>'+
+            '       OS <i>'+data[i]['OS according to the VMware Tools']+'</i><br>'+
+            '       CPU :'+data[i]['CPUs']+'<br>'+
+            '       Memory :'+parseInt(data[i]['Memory'])/1024+' GB</p>'+
+            '   </div>'+
+            '   </div>'
+        }
+
+        content += ''+
+        '</div>'+
+        '</div>'
+        
+        $("#contents").append(content);
+
+        console.log("[end]viewvInfoDashboard..");
+
+    }
+</script>
